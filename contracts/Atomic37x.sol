@@ -12,26 +12,31 @@ contract Atomic37x is ERC721URIStorage {
     Counters.Counter private _tokenIds;
 
     mapping(uint256 => uint256) public tokenIdToLevels;
+    mapping(uint256 => uint256) private lastTrainedTime;
 
-    constructor() ERC721 ("Atomic Habit 37x", "AH37x") {
-        
-    }
+    constructor() ERC721("Atomic Habit 37x", "AH37x") {}
 
     function generateSVG(uint256 tokenId) public view returns (string memory) {
         bytes memory svg = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350">',
-            '<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>',
+            "<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>",
             '<rect width="100%" height="100%" fill="black" />',
-            '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',"Warrior",'</text>',
-            '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Levels: ",getLevels(tokenId),'</text>',
-            '</svg>'
+            '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',
+            "Atomic 37x",
+            "</text>",
+            '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">',
+            "Levels: ",
+            getLevels(tokenId),
+            "</text>",
+            "</svg>"
         );
-        return string(
-            abi.encodePacked(
-                "data:image/svg+xml;base64,",
-                Base64.encode(svg)
-            )
-        );
+        return
+            string(
+                abi.encodePacked(
+                    "data:image/svg+xml;base64,",
+                    Base64.encode(svg)
+                )
+            );
     }
 
     function getLevels(uint256 tokenId) public view returns (string memory) {
@@ -41,16 +46,24 @@ contract Atomic37x is ERC721URIStorage {
 
     function getTokenURI(uint256 tokenId) public view returns (string memory) {
         bytes memory dataURI = abi.encodePacked(
-            '{',
-                '"name": "Atomic Habit #', tokenId.toString(), '"',
-                '"description: "Build your atomic habit on chain"',
-                '"image": "', generateSVG(tokenId), '"',
-            '}'
+            "{",
+            '"name": "Atomic Habit #',
+            tokenId.toString(),
+            '"',
+            '"description: "Build your atomic habit on chain"',
+            '"image": "',
+            generateSVG(tokenId),
+            '"',
+            "}"
         );
 
-        return string(
-            abi.encodePacked("data:application/json;base64,",Base64.encode(dataURI))
-        );
+        return
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Base64.encode(dataURI)
+                )
+            );
     }
 
     function _mint() public {
@@ -64,10 +77,12 @@ contract Atomic37x is ERC721URIStorage {
     function train(uint256 tokenId) public {
         require(_exists(tokenId), "Token does not exist");
         require(ownerOf(tokenId) == msg.sender, "Only owner can train");
-        uint256  currentLevel = tokenIdToLevels[tokenId];
+        require(
+            lastTrainedTime[tokenId] + 1 days <= block.timestamp,
+            "Token can only be trained once every 24 hours"
+        );
+        uint256 currentLevel = tokenIdToLevels[tokenId];
         tokenIdToLevels[tokenId] = currentLevel + 1;
         _setTokenURI(tokenId, getTokenURI(tokenId));
     }
-
-
 }
