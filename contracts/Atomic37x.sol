@@ -16,6 +16,13 @@ contract Atomic37x is ERC721URIStorage {
 
     constructor() ERC721("Atomic Habit 37x", "AH37x") {}
 
+    function compareStringsbyBytes(
+        string memory s1,
+        string memory s2
+    ) public pure returns (bool) {
+        return keccak256(s1) == keccak256(s2);
+    }
+
     function generateSVG(uint256 tokenId) public view returns (string memory) {
         bytes memory svg = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350">',
@@ -66,12 +73,23 @@ contract Atomic37x is ERC721URIStorage {
             );
     }
 
-    function _mint() public {
+    function createItem() public {
+        require(balanceOf(msg.sender) == 0, "Only focus on one goal at a time");
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
-        _safeMint(msg.sender, newItemId);
         tokenIdToLevels[newItemId] = 0;
+        _safeMint(msg.sender, newItemId);
         _setTokenURI(newItemId, getTokenURI(newItemId));
+    }
+
+    function giveUp(uint256 tokenId) public {
+        require(ownerOf(tokenId) == msg.sender, "Only owner can give up");
+        // require that the token has been trained at least once
+        require(
+            compareStringsbyBytes(getLevels(tokenId), "0"),
+            "Should not give up before start"
+        );
+        _burn(tokenId);
     }
 
     function train(uint256 tokenId) public {
