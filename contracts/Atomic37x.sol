@@ -16,11 +16,11 @@ contract Atomic37x is ERC721URIStorage {
 
     constructor() ERC721("Atomic Habit 37x", "AH37x") {}
 
-    function compareStringsbyBytes(
+    function compareStrings(
         string memory s1,
         string memory s2
     ) public pure returns (bool) {
-        return keccak256(s1) == keccak256(s2);
+        return keccak256(bytes(s1)) == keccak256(bytes(s2));
     }
 
     function generateSVG(uint256 tokenId) public view returns (string memory) {
@@ -33,7 +33,7 @@ contract Atomic37x is ERC721URIStorage {
             "</text>",
             '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">',
             "Levels: ",
-            getLevels(tokenId),
+            getLevel(tokenId),
             "</text>",
             "</svg>"
         );
@@ -46,9 +46,9 @@ contract Atomic37x is ERC721URIStorage {
             );
     }
 
-    function getLevels(uint256 tokenId) public view returns (string memory) {
-        uint256 levels = tokenIdToLevels[tokenId];
-        return levels.toString();
+    function getLevel(uint256 tokenId) public view returns (string memory) {
+        uint256 level = tokenIdToLevels[tokenId];
+        return level.toString();
     }
 
     function getTokenURI(uint256 tokenId) public view returns (string memory) {
@@ -56,8 +56,8 @@ contract Atomic37x is ERC721URIStorage {
             "{",
             '"name": "Atomic Habit #',
             tokenId.toString(),
-            '"',
-            '"description: "Build your atomic habit on chain"',
+            '",',
+            '"description": "Build your atomic habit on chain",',
             '"image": "',
             generateSVG(tokenId),
             '"',
@@ -86,10 +86,14 @@ contract Atomic37x is ERC721URIStorage {
         require(ownerOf(tokenId) == msg.sender, "Only owner can give up");
         // require that the token has been trained at least once
         require(
-            compareStringsbyBytes(getLevels(tokenId), "0"),
+            compareStrings(getLevel(tokenId), "0"),
             "Should not give up before start"
         );
+        // TODO charge of give up
+
         _burn(tokenId);
+        delete tokenIdToLevels[tokenId];
+        delete lastTrainedTime[tokenId];
     }
 
     function train(uint256 tokenId) public {
@@ -100,6 +104,7 @@ contract Atomic37x is ERC721URIStorage {
             "Token can only be trained once every 24 hours"
         );
         uint256 currentLevel = tokenIdToLevels[tokenId];
+        lastTrainedTime[tokenId] = block.timestamp;
         tokenIdToLevels[tokenId] = currentLevel + 1;
         _setTokenURI(tokenId, getTokenURI(tokenId));
     }
