@@ -1,58 +1,44 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { encodeBase58, ethers } from 'ethers';
-	import type { PageData } from './$types';
+	import { PUBLIC_CONTRACT_ADDRESS } from '$env/static/public';
+	import { ethers, Contract, isError } from 'ethers';
+	import Atomic37x from '$lib/Atomic37x.json';
 
-	export let data: PageData;
+	async function getList() {
+		let returnList = [];
+		const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545/');
 
-	let currentAccount: string;
-	let connectedNetwork: string;
-	let signer: ethers.Signer;
+		const signer = await provider.getSigner();
 
-	onMount(async () => {
-		console.log('onMount');
-		if (window && window !== undefined && window.ethereum) {
-			const provider = new ethers.BrowserProvider(window.ethereum);
-			signer = await provider.getSigner();
-			console.log(signer);
+		const contract = new Contract(PUBLIC_CONTRACT_ADDRESS, Atomic37x.abi, signer);
+
+		const total = await contract.totalSupply();
+
+		for (let i = 0; i < total; i++) {
+			const tx = await contract.tokenByIndex(i);
+			const metaData = await contract.tokenURI(tx);
+			const meta = atob(metaData.split(',')[1]).toString();
+			const parsed = JSON.parse(meta);
+			// console.log(parsed);
+			returnList.push(parsed);
 		}
-	});
+		return returnList;
+	}
 
-	// function handleAccountsChanged(accounts: Array<string>): void {
-	// 	if (accounts.length === 0) {
-	// 		console.log('Please connect to MetaMask');
-	// 		currentAccount = undefined;
-	// 	} else if (accounts[0] !== currentAccount) {
-	// 		currentAccount = accounts[0];
-	// 		connectedNetwork = networks[Number(window.ethereum.chainId)];
-	// 	}
-	// }
-
-	// function connect(): void {
-	// 	window.ethereum
-	// 		.request({ method: 'eth_requestAccounts' })
-	// 		.then(handleAccountsChanged)
-	// 		.catch((err) => {
-	// 			if (err.code === 4001) {
-	// 				// EIP-1193 userRejectedRequest error
-	// 				// If this happens, the user rejected the connection request.
-	// 				console.log('Please connect to MetaMask.');
-	// 			} else {
-	// 				console.error(err);
-	// 			}
-	// 		});
-	// }
+	let allList = getList();
 </script>
 
-{#if signer}
-	<div>signer</div>
-{:else}
-	<div>Install wallet</div>
-{/if}
-
-{#each data.nfts as item}
-	<div>{item.tokenId}</div>
-	<img src={item?.rawMetadata?.image} alt="NFT" />
-{:else}
-	<div>no nfts</div>
-{/each}
+{#await allList then list}
+	<div class="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
+		{#each list as item}
+			<div>
+				<div>{item.name}</div>
+				<div>{item.description}</div>
+				<img src={item.image} alt="NFT" />
+			</div>
+		{:else}
+			<div>no nfts</div>
+		{/each}
+	</div>
+{:catch error}
+	<p>{error.message}</p>
+{/await}

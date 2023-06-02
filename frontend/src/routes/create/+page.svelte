@@ -1,18 +1,24 @@
-<script>
+<script lang="ts">
 	import { ethers, Contract } from 'ethers';
-	import Atomic37x from './Atomic37x.json';
+	import { PUBLIC_CONTRACT_ADDRESS } from '$env/static/public';
+	import Atomic37x from '$lib/Atomic37x.json';
+
+	let goal = '';
 
 	async function createItem() {
-		const provider = new ethers.BrowserProvider(window.ethereum);
+		// const provider = new ethers.BrowserProvider(window.ethereum);
+		const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545/');
 		const signer = await provider.getSigner();
-		const DEPLOYED_ADDRESS = '0x591A13B11B16889c346F3310e9fd1D22Ab47eCd9';
-		const contract = new Contract(DEPLOYED_ADDRESS, Atomic37x.abi, signer);
-		console.log('start');
-		const tx = await contract.createItem();
+		const contract = new Contract(PUBLIC_CONTRACT_ADDRESS, Atomic37x.abi, signer);
+		const tx = await contract.createItem(goal.trim());
 		await tx.wait();
-		console.log('end');
 	}
 </script>
 
 <div>Create</div>
-<button on:click|preventDefault={createItem}>add</button>
+
+<label for="title">Title</label>
+<textarea name="title" id="title" bind:value={goal} maxlength="280" />
+<div>{goal.length}/280</div>
+
+<button on:click|preventDefault={createItem} disabled={goal.trim().length === 0}>add</button>
