@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
-contract Atomic37x is ERC721, ERC721Enumerable, ERC721URIStorage {
+contract Atomic38x is ERC721, ERC721Enumerable, ERC721URIStorage {
     using Strings for uint256;
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -23,7 +23,7 @@ contract Atomic37x is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     mapping(uint256 => Habit) public habits;
 
-    constructor() ERC721("Atomic Habit 37x", "AH37x") {
+    constructor() ERC721("Atomic Habit 38x", "AH38x") {
         owner = msg.sender;
     }
 
@@ -65,17 +65,25 @@ contract Atomic37x is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     function generateSVG(uint256 tokenId) public view returns (string memory) {
         bytes memory svg = abi.encodePacked(
-            '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350">',
-            "<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>",
-            '<rect width="100%" height="100%" fill="black" />',
-            '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',
-            "Atomic 37x",
+            '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" viewBox="0 0 350 350" width="350" height="350"><style>p {font-family: Helvetica}</style><defs><linearGradient gradientTransform="rotate(150, 0.5, 0.5)" x1="50%" y1="0%" x2="50%" y2="100%" id="gradient">'
+            '<stop stop-color="hsl(',
+            generateFirstColor(),
+            ', 100%, 75%)" stop-opacity="1" offset="0%"></stop>',
+            '<stop stop-color="hsl(',
+            generateSecondColor(),
+            ', 100%, 60%)" stop-opacity="1" offset="100%"></stop></linearGradient>',
+            '<filter id="filter" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.005 0.003" numOctaves="1" seed="236" stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence"></feTurbulence><feGaussianBlur stdDeviation="20 0" x="0%" y="0%" width="100%" height="100%" in="turbulence" edgeMode="duplicate" result="blur"></feGaussianBlur><feBlend mode="color-dodge" x="0%" y="0%" width="100%" height="100%" in="SourceGraphic" in2="blur" result="blend"></feBlend></filter></defs>',
+            '<rect width="350" height="350" fill="url(#gradient)" filter="url(#filter)"></rect>',
+            '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle" font-family="Helvetica" font-size="1.5em" font-weight="bold">',
+            "Atomic 38x",
             "</text>",
-            '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">',
+            '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle" font-family="Helvetica">',
             "Day: ",
             getLevel(tokenId),
             "</text>",
-            "</svg>"
+            '<foreignObject x="20" y="180" width="310" height="200"><p xmlns="http://www.w3.org/1999/xhtml">',
+            getGoal(tokenId),
+            "</p></foreignObject></svg>"
         );
         return
             string(
@@ -86,23 +94,42 @@ contract Atomic37x is ERC721, ERC721Enumerable, ERC721URIStorage {
             );
     }
 
+    function generateFirstColor() private view returns (string memory) {
+        uint256 rand = uint256(
+            keccak256(abi.encodePacked(block.timestamp, msg.sender))
+        ) % 360;
+        return rand.toString();
+    }
+
+    function generateSecondColor() private view returns (string memory) {
+        uint256 rand = uint256(block.timestamp) % 360;
+        return rand.toString();
+    }
+
     function getLevel(uint256 tokenId) public view returns (string memory) {
         Habit memory habit = habits[tokenId];
         return habit.level.toString();
     }
 
-    function getLastTrainedTime(uint256 tokenId) public view returns (uint256) {
+    function getGoal(uint256 tokenId) public view returns (string memory) {
+        Habit memory habit = habits[tokenId];
+        return habit.goal;
+    }
+
+    function getLastTrainedTime(
+        uint256 tokenId
+    ) private view returns (uint256) {
         Habit memory habit = habits[tokenId];
         return habit.lastTrainedTime;
     }
 
-    function setLastTrainedTime(uint256 tokenId, uint256 time) public {
+    function setLastTrainedTime(uint256 tokenId, uint256 time) private {
         Habit memory habit = habits[tokenId];
         habit.lastTrainedTime = time;
         habits[tokenId] = habit;
     }
 
-    function increaseLevel(uint256 tokenId) public {
+    function increaseLevel(uint256 tokenId) private {
         Habit memory habit = habits[tokenId];
         habit.level = habit.level + 1;
         habits[tokenId] = habit;

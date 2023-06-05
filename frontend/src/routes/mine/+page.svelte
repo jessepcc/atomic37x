@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { ethers, Contract, isError } from 'ethers';
 	import { PUBLIC_CONTRACT_ADDRESS } from '$env/static/public';
-	import Atomic37x from '$lib/Atomic37x.json';
+	import atomic38x from '$lib/atomic38x.json';
 
 	async function getMyList() {
-		// const provider = new ethers.BrowserProvider(window.ethereum);
 		let returnList = [];
-		const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545/');
-
+		const provider = new ethers.BrowserProvider(window.ethereum);
 		const signer = await provider.getSigner();
 
-		const contract = new Contract(PUBLIC_CONTRACT_ADDRESS, Atomic37x.abi, signer);
+		const contract = new Contract(PUBLIC_CONTRACT_ADDRESS, atomic38x.abi, signer);
 		const address = await signer.getAddress();
 
 		// check if address is owner
@@ -31,10 +29,9 @@
 	async function train(tokenId: string) {
 		console.log('taine ', tokenId);
 		try {
-			const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545/');
-
+			const provider = new ethers.BrowserProvider(window.ethereum);
 			const signer = await provider.getSigner();
-			const contract = new Contract(PUBLIC_CONTRACT_ADDRESS, Atomic37x.abi, signer);
+			const contract = new Contract(PUBLIC_CONTRACT_ADDRESS, atomic38x.abi, signer);
 			const tx = await contract.train(tokenId);
 			await tx.wait();
 		} catch (error) {
@@ -51,20 +48,30 @@
 	let myList = getMyList();
 </script>
 
-<h1>title</h1>
+<h2 class="text-2xl text-center font-bold mb-4">My Atomic Habit</h2>
+<p class="text-center mb-8">Keep it up!</p>
 {#await myList then list}
 	<div class="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
 		{#each list as item}
-			<div>
-				<div>{item.name}</div>
-				<div>{item.description}</div>
+			<div class="relative rounded-xl shadow-sm overflow-clip">
 				<img src={item.image} alt="NFT" />
-				<button on:click|preventDefault={() => train(item.tokenId)}>train</button>
+				<div class="g-container absolute flex inset-0 bg-transparent hover:bg-zinc-50/80">
+					<button
+						class="g-btn transition-opacity ease-in delay-50 opacity-0 items-center m-auto justify-center py-2.5 px-4 text-sm font-medium text-center text-white bg-amber-500 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-amber-700"
+						on:click|preventDefault={() => train(item.tokenId)}>Record Progress</button
+					>
+				</div>
 			</div>
 		{:else}
-			<div>no nfts</div>
+			<div class="text-center">no nfts</div>
 		{/each}
 	</div>
 {:catch error}
-	<p>{error.message}</p>
+	<p class="text-center text-sm">{error.message}</p>
 {/await}
+
+<style>
+	.g-container:hover .g-btn {
+		opacity: 1;
+	}
+</style>
