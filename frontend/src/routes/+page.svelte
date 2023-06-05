@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PUBLIC_CONTRACT_ADDRESS } from '$env/static/public';
 	import { ethers, Contract, isError } from 'ethers';
-	import atomic38x from '$lib/atomic38x.json';
+	import atomic38x from '$lib/Atomic38x.json';
 
 	async function getList() {
 		let returnList = [];

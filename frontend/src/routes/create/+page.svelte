@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ethers, Contract } from 'ethers';
 	import { PUBLIC_CONTRACT_ADDRESS } from '$env/static/public';
-	import atomic38x from '$lib/atomic38x.json';
+	import atomic38x from '$lib/Atomic38x.json';
 
 	let goal = '';
 	let loading = false;
