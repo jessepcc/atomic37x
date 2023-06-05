@@ -50,7 +50,7 @@
 				<p class=" text-sm font-medium text-gray-400">
 					Build your atomic habit with NFT & become 38x after 1 year
 				</p>
-				<div class="my-2 flex gap-2">
+				<div class="mt-2 mb-4 sm:mb-8 flex gap-2">
 					<a
 						class="text-gray-700 transition hover:text-gray-700/75"
 						href="https://twitter.com/jessepcc"

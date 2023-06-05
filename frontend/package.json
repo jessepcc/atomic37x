@@ -1,5 +1,5 @@
 {
-	"name": "web",
+	"name": "atomic38x - sveltekit",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
@@ -14,7 +14,6 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"devDependencies": {
-		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.5.0",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
